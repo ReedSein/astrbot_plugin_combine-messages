@@ -1,7 +1,7 @@
 from astrbot.api.event import filter, AstrMessageEvent, MessageChain
 from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
-from astrbot.api.message_components import Plain, Image, At, BaseMessageComponent
+from astrbot.api.message_components import Plain, Image, At, File, BaseMessageComponent
 import asyncio
 import uuid
 import time
@@ -16,6 +16,34 @@ from astrbot.api import AstrBotConfig
 async def recognize_image_content(image: Image) -> str:
     # TODO: 调用实际图片识别API
     return f"[图片:{image.url or image.file or '未知'}]"
+
+
+# 文件内容识别接口
+async def recognize_file_content(file: File) -> str:
+    """
+    识别文件内容并返回描述信息
+    根据文件URL和名称生成文件描述
+    """
+    file_url = getattr(file, 'url', '') or getattr(file, 'file_', '') or getattr(file, 'file', '')
+    file_name = getattr(file, 'name', '') or '未知文件'
+    
+    if file_url:
+        # 从URL中提取文件名（如果name为空）
+        if not file_name or file_name == '未知文件':
+            try:
+                import urllib.parse
+                parsed_url = urllib.parse.urlparse(file_url)
+                # 尝试从URL参数中获取文件名
+                if 'fname=' in parsed_url.query:
+                    fname_param = urllib.parse.parse_qs(parsed_url.query).get('fname', [''])[0]
+                    if fname_param:
+                        file_name = urllib.parse.unquote(fname_param)
+                elif parsed_url.path:
+                    file_name = parsed_url.path.split('/')[-1] or '未知文件'
+            except Exception:
+                pass
+    
+    return f"[文件:{file_name}]({file_url})" if file_url else f"[文件:{file_name}]"
 
 
 class MessageBuffer:
@@ -107,6 +135,9 @@ class MessageBuffer:
                 elif isinstance(comp, At):
                     # 保留At信息的文本表示
                     merged_str_parts.append(f"@{comp.qq}")
+                elif isinstance(comp, File):
+                    # 调用文件识别接口
+                    merged_str_parts.append(await recognize_file_content(comp))
             merged_str = " ".join(merged_str_parts)
             if not merged_str.strip():
                 self.buffer_pool.pop(sid, None)
@@ -340,6 +371,9 @@ class CombineMessagesPlugin(Star):
                 await self.message_buffer.add_component(event, comp)
                 has_content_to_merge = True
             elif isinstance(comp, At):
+                await self.message_buffer.add_component(event, comp)
+                has_content_to_merge = True
+            elif isinstance(comp, File):
                 await self.message_buffer.add_component(event, comp)
                 has_content_to_merge = True
 
