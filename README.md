@@ -18,6 +18,9 @@
 
 ## 更新日志
 
+### v1.4
+- 新增对文件消息的合并支持
+
 ### v1.3
 - 合并 [pr#7](https://github.com/FreeDivers/astrbot_plugin_combine-messages/pull/7)，新增 webui 配置面板
 
