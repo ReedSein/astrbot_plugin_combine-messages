@@ -5,31 +5,33 @@
     "default": true
   },
   "interval_time": {
-    "description": "合并消息的最大间隔（秒）",
+    "description": "合并等待时间（秒）",
+    "hint": "收到第一条消息后等待多久进行合并。建议 1.0 ~ 3.0 秒。设置太短可能导致长句被截断，太长会导致响应变慢。",
     "type": "float",
-    "default": 3
+    "default": 3.0
   },
   "initial_delay": {
-    "description": "首次消息后的延迟（秒）",
+    "description": "初始防抖延迟（秒）",
+    "hint": "收到消息后的静默缓冲期。防止极短时间内的连发（如 0.1s 内）触发多次合并逻辑。建议 0.5 秒。",
     "type": "float",
     "default": 0.5
   },
-  "extra_commands": {
-    "description": "自定义屏蔽指令列表",
-    "hint": "插件会自动屏蔽指令类消息，防止二次响应，但是部分指令可能读取不到，可在此处添加",
-    "type": "list",
-    "items": {
-      "type": "string"
-    },
-    "default": ["llm"]
-  },
   "block_prefixes": {
-    "description": "自定义屏蔽符号前缀列表",
-    "hint": "遇到这些前缀的消息将不会被合并，如：'/', '!', '！', '.', '。', '#', '%'",
+    "description": "屏蔽前缀列表",
+    "hint": "以这些符号开头的消息将【绝对不会】被合并，直接放行。通常用于指令屏蔽。",
     "type": "list",
     "items": {
       "type": "string"
     },
-    "default": ["/", "!",  ".", "。", "#", "%"]
+    "default": ["/", "!", "！", ".", "。", "#", "%"]
+  },
+  "extra_commands": {
+    "description": "额外屏蔽指令",
+    "hint": "除了系统自动识别的指令外，你还希望哪些关键词不被合并？（例如 'llm' 或其他插件的指令名）",
+    "type": "list",
+    "items": {
+      "type": "string"
+    },
+    "default": ["llm", "help", "start"]
   }
 }
