@@ -4,15 +4,21 @@
     "type": "bool",
     "default": true
   },
-  "wait_time": {
-    "description": "合并等待窗口（秒）",
-    "hint": "收到第一条消息后，绝对等待多少秒再发送。建议 1.5 ~ 3.0 秒。只要在这个时间内发的消息，都会被打包成一条。",
+  "interval_time": {
+    "description": "合并等待时间（秒）",
+    "hint": "收到第一条消息后等待多久进行合并。建议 1.0 ~ 3.0 秒。设置太短可能导致长句被截断，太长会导致响应变慢。",
     "type": "float",
-    "default": 2.0
+    "default": 3.0
+  },
+  "initial_delay": {
+    "description": "初始防抖延迟（秒）",
+    "hint": "收到消息后的静默缓冲期。防止极短时间内的连发（如 0.1s 内）触发多次合并逻辑。建议 0.5 秒。",
+    "type": "float",
+    "default": 0.5
   },
   "block_prefixes": {
     "description": "屏蔽前缀列表",
-    "hint": "以这些符号开头的消息直接放行（不合并），通常用于指令。",
+    "hint": "以这些符号开头的消息将【绝对不会】被合并，直接放行。通常用于指令屏蔽。",
     "type": "list",
     "items": {
       "type": "string"
@@ -21,10 +27,11 @@
   },
   "extra_commands": {
     "description": "额外屏蔽指令",
+    "hint": "除了系统自动识别的指令外，你还希望哪些关键词不被合并？（例如 'llm' 或其他插件的指令名）",
     "type": "list",
     "items": {
       "type": "string"
     },
-    "default": ["llm", "help", "reset"]
+    "default": ["llm", "help", "start"]
   }
 }
